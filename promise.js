@@ -1,18 +1,28 @@
 class Promise {
-    callbacks = []       //数组，可以多次添加回调
+    status = 'pending'
+    data= null
+    callbacks = []
     constructor(fn) {
         fn(this.resolve.bind(this))
     }
 
     resolve(value) {
-        setTimeout(() => {                            //在回调函数注册后执行回调函数
-            this.callbacks.forEach(fn => fn(value))
-        })
+        this.status = 'resolved'
+        this.data = value
+        this.callbacks.forEach(fn => fn(value))
     }
 
-    then(fullfilled) {
-        this.callbacks.push(fullfilled)
-        return this                              //实现简单链式调用，重复注册回调函数
+    /* 
+        添加状态，并用data保存resolve的value值
+    */
+
+    then(fulfilled) {
+        if (this.status === 'pending') {
+            this.callbacks.push(fullfilled)
+        } else {
+            fulfilled(this.data)
+        }
+        return this
     }
 }
 
@@ -26,7 +36,7 @@ p.then(tip => {
     console.log(value)
 })
 
-setTimeout(() => {                    //在resolve函数setTimeout之后的回调无法再添加到队列
+setTimeout(() => {
     p.then((data) => {
         console.log(data)
     })
